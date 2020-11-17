@@ -1,0 +1,57 @@
+---
+- name: build and run server
+  hosts: ubuntuGroup
+  become: true
+
+  tasks:
+    - name: Create workspace
+      file:
+        path: /home/ubuntu/dockerwork
+        state: directory
+
+    - name: Copying Dockerfile
+      copy:
+        src: "./Dockerfile"
+        dest: "/home/ubuntu/dockerwork/"
+      ignore_errors: yes
+
+    - name: Copying app.go
+      copy:
+        src: "./app.go"
+        dest: "/home/ubuntu/dockerwork/"
+      ignore_errors: yes
+
+    - name: build server image
+      docker_image:
+        name: go-server
+        build:
+          path: /home/ubuntu/dockerwork
+          pull: yes
+          rm: yes
+        source: build
+        state: present
+
+    - name: register hostname
+      shell: hostname
+      register: currentHostname
+
+    - name: run server docker
+      docker_container:
+        name: server-container
+        image: go-server
+        state: started
+        ports:
+          - "8080:8080"
+        hostname: "{{ currentHostname.stdout }}"
+
+    - name: clear unused docker images
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false
+        builder_cache: yes
+
+    - name: remove work directory
+      file:
+        path: /home/ubuntu/dockerwork
+        state: absent

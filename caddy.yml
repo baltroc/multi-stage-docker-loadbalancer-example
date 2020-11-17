@@ -1,0 +1,39 @@
+---
+- name: caddy load balancer
+  hosts: main
+  become: true
+
+  tasks:
+    - name: Create workspace
+      file:
+        path: /home/ubuntu/caddywork
+        state: directory
+
+    - name: Copying Dockerfile
+      copy:
+        src: "./Dockerfile"
+        dest: "/home/ubuntu/caddywork/"
+      ignore_errors: yes
+
+    - name: Copying Caddyfile
+      copy:
+        src: "./Caddyfile"
+        dest: "/home/ubuntu/caddywork/"
+      ignore_errors: yes
+
+    - name: build caddy image
+      docker_image:
+        name: caddy
+        source: pull
+
+    - name: run server docker
+      docker_container:
+        name: caddy-load-balancer
+        image: caddy
+        state: started
+        ports:
+          - "8081:8081"
+        detach: true
+        interactive: true
+        volumes:
+          - /home/ubuntu/caddywork/Caddyfile:/etc/caddy/Caddyfile

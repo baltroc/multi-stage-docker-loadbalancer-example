@@ -1,0 +1,8 @@
+[ubuntuGroup]
+172.28.100.202 ansible_connection=ssh ansible_user=ubuntu
+172.28.100.156 ansible_connection=ssh ansible_user=ubuntu
+172.28.100.25 ansible_connection=ssh ansible_user=ubuntu
+172.28.100.224 ansible_connection=ssh ansible_user=ubuntu
+
+[main]
+172.28.100.202 ansible_connection=ssh ansible_user=ubuntu
