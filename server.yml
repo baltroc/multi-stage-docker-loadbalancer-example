@@ -21,8 +21,14 @@
         dest: "/home/ubuntu/dockerwork/"
       ignore_errors: yes
 
+    - name: get id of image
+      command: 'docker images --format {%raw%}"{{.ID}}"{%endraw%} --no-trunc go-server'
+      register: image_id
+      changed_when: image_id.rc != 0
+
     - name: build server image
       docker_image:
+        force_source: yes
         name: go-server
         build:
           path: /home/ubuntu/dockerwork
@@ -30,6 +36,8 @@
           rm: yes
         source: build
         state: present
+      register: image_build
+      changed_when: image_id.stdout != image_build.image.Id
 
     - name: register hostname
       shell: hostname
@@ -38,7 +46,8 @@
     - name: run server docker
       docker_container:
         name: server-container
-        image: go-server
+        image: go-server:latest
+        recreate: '{{ True if image_build.changed else omit }}'
         state: started
         ports:
           - "8080:8080"
