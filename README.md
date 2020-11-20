@@ -43,14 +43,15 @@ A la fin on supprime les images qui ne sont pas en cours d'utilisations en utili
 ### load balancer
 
   1. Type de load balancing
-    - layer 4
-    - layer 7
+      - layer 4
+      - layer 7
   2. On utilise le layer 4, car on souhaite sélectionner le serveur à utiliser indépendamment des données.
   3. Stratégie de load balancing
-    - Round robin
-    - Weighted round robin
-    - Least connections
-    - Least response time
+      - Round robin
+      - Weighted round robin
+      - Least connections
+      - Least response time
+
     On va utiliser le round robin car on souhaite changer de serveur à chaque fois.
 
 ##### Caddy
