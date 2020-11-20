@@ -7,6 +7,7 @@ On suppose les instances déjà installé avec Ubuntu, un clé ssh, le port 8080
 Il faut mettre les IPs de ses serveurs dans le fichier hosts, dans la partie ubuntuGroup. L'IP du load balancer dans la partie main.
 
 déployer les serveurs : ansible-playbook --private-key sshkey -i hosts server.yml
+
 déployer le load balancer : ansible-playbook --private-key sshkey -i hosts caddy.yml
 
 Pour tester utiliser IP:8081
