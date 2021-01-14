@@ -23,14 +23,15 @@
 
     - name: build caddy image
       docker_image:
-        name: caddy
+        name: caddy:2.3.0
         source: pull
 
     - name: run server docker
       docker_container:
         name: caddy-load-balancer
-        image: caddy
+        image: caddy:2.3.0
         state: started
+        recreate: yes
         ports:
           - "8081:8081"
         detach: true
