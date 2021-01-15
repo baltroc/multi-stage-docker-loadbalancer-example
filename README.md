@@ -2,7 +2,7 @@
 
 ## Usage
 
-This is an example ubuntu servers.
+This is an example for ubuntu servers.
 
 If you want to try it you need to edit the hosts file and add your servers. web servers IPs in ubuntuGroup and your load balancer IP in main.In Caddyfile put your load balancer IP on top and the web servers IPs after the "to"
 
