@@ -1,39 +1,38 @@
-# dac
+# multi-stage build docker and load balancer example
 
-## Utilisation
+## Usage
 
-On suppose les instances déjà installé avec Ubuntu, une connexion ssh, le port 8080 ouvert sur tous les serveurs et le port 8081 pour le load balancer.
+This is an example ubuntu servers.
 
-Il faut mettre les IPs de ses serveurs dans le fichier hosts, dans la partie ubuntuGroup. L'IP du load balancer dans la partie main.
+If you want to try it you need to edit the hosts file and add your servers. web servers IPs in ubuntuGroup and your load balancer IP in main.In Caddyfile put your load balancer IP on top and the web servers IPs after the "to"
 
-déployer les serveurs : ansible-playbook --private-key sshkey -i hosts server.yml
+web servers playbook : ansible-playbook --private-key sshkey -i hosts server.yml
 
-déployer le load balancer : ansible-playbook --private-key sshkey -i hosts caddy.yml
+load balancer playbook : ansible-playbook --private-key sshkey -i hosts caddy.yml
 
-Pour tester utiliser IP:8081
+web servers are setup to listen on port 8080. load balancer listen on port 8081 in this example.
 
 ## Dockerfile
 
-#### compilation Golang
+#### Golang compilation
 
-Pour compiler on utilise différents paramètre afin de réduire la taille du binaire.
-  - CGO_ENABLED=0 On désactive cgo dans la compilation car notre app.go n'utilise pas de fonction C
-  - GGOOS=linux et GOARCH=amd64 On connait le système et l'architecture de nos instances, on peut donc réduire la taille en compilant uniquement pour ceux-ci.
-  - -ldflags="-w -s" On retire les informations de débogage et la table des symboles.
+We use some compiler parameters to reduce de size of the binary.
+  - CGO_ENABLED=0 We disable cgo because app.go doesn't use any C functions.
+  - GGOOS=linux and GOARCH=amd64 We know our operating system and system architecture, we can compile only for them.
+  - -ldflags="-w -s" We remove debugging informations and symbols table.
 
-#### image avec Busybox
+#### image with Busybox
 
-J'ai choisis Busybox plutôt qu'Alpine pour la taille, la même image avec Alpine tournait autour de 13M tandis que celle ci s'approche des 4.8M et que les fonctionnalités supplémentaires d'Alpine n'était pas nécessaire sur cet exemple.
+We use the busybox image instead of Alpine beacause it's smaller and enough for this example. Around 13M with Alpine while we have around 4.8M with busybox.
 
-On utilise le multi-stage build de docker afin de réduire le nombre de layer.
-
+We use the docker multi-stage build to reduce the number of layer.
 
 #### server.yml
 
-Pour recréer le conteneur dans le cas où l'image change, j'ai utilisé Ansible afin de récupérer l'ID de l'image déjà présente sur l'instance, pour ensuite la comparer avec la nouvelle créé("force_source: yes" permet de build l'image même si elle existe déjà). Si celle-ci a changé, l'image à changé, il faut donc recréer le conteneur et le démarrer.
+We register the ID of the old image then we use "force_source: yes" to recreate the image even if an image with the same name already exist to make sure any change is  added to the image and we recreate the container only if the image changed.
 
-A la fin on supprime les images qui ne sont pas en cours d'utilisations en utilisant docker_prune, cela permet de libérer de l'espace, cependant il faut faire attention car on supprime toutes les images non utilisées qui pourraient utile dans d'autre projet. Ici ce n'est pas un problème mais si l'on souhaite conserver d'autres images qui ne sont pas en cours d'utilisations. Il faudrait supprimer nos images en les cherchant par nom.
+At the end we use docker_prune to delete all unused images, this can be an issue if you don't want to lose your unused images.
 
 ## load balancer
 
-Le load balancer est configuré en Round Robin dans le Caddyfile, il n'y a pas d'optimisation particulière sur la taille du conteneur.
+The load balancer is configured for Round Robin in the Caddyfile.
